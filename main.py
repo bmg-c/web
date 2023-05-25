@@ -1,56 +1,85 @@
-from fastapi import FastAPI
 from uvicorn import run as uvicorn_run
+from pydantic import BaseModel, Field
+from typing import List, Optional
+from datetime import datetime
+from enum import Enum
 
-app = FastAPI(title="Multitasker")
+from fastapi import FastAPI, Request, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import ValidationError
+from fastapi.responses import JSONResponse
+
+
+app = FastAPI(title='Multitasker')
+
+
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: ValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder({"detail": exc.errors()}),
+    )
+
 
 fake_users = [
-    {"id": 1, "role": "admin", "name": "Bob"},
-    {"id": 2, "role": "investor", "name": "John"},
-    {"id": 3, "role": "trader", "name": "Matt"},
+    {'id': 1, 'role': 'admin', 'name': ['Bob']},
+    {'id': 2, 'role': 'investor', 'name': 'John'},
+    {'id': 3, 'role': 'trader', 'name': 'Matt', 'degree': [
+        {'id': 1, 'created_at': '2020-01-01T00:00:00',
+         'type_degree': 'expert'}]},
 ]
 
 
-@app.get('/users/{user_id}')
+class DegreeType(Enum):
+    newbie = 'newbie'
+    expert = 'expert'
+
+
+class Degree(BaseModel):
+    id: int
+    created_at: datetime
+    type_degree: DegreeType
+
+
+class User(BaseModel):
+    id: int
+    role: str
+    name: str
+    degree: Optional[List[Degree]]
+
+
+@app.get('/users/{user_id}', response_model=List[User])
 def get_user(user_id: int):
-    return [user for user in fake_users if user.get("id") == user_id]
+    return [user for user in fake_users if user.get('id') == user_id]
 
 
 fake_trades = [
-    {"id": 1, "user_id": 1, "currency": "BTC",
-        "side": "buy", "price": 123, "amount": 2.12},
-    {"id": 2, "user_id": 1, "currency": "BTC",
-        "side": "sell", "price": 125, "amount": 2.12},
-    {"id": 3, "user_id": 1, "currency": "BTC",
-        "side": "sell", "price": 125, "amount": 2.12},
-    {"id": 4, "user_id": 1, "currency": "BTC",
-        "side": "sell", "price": 125, "amount": 2.12},
-    {"id": 5, "user_id": 1, "currency": "BTC",
-        "side": "sell", "price": 125, "amount": 2.12},
+    {'id': 1, 'user_id': 1, 'currency': 'BTC',
+        'side': 'buy', 'price': 123, 'amount': 2.12},
+    {'id': 2, 'user_id': 1, 'currency': 'BTC',
+        'side': 'sell', 'price': 125, 'amount': 2.12},
+    {'id': 3, 'user_id': 1, 'currency': 'BTC',
+        'side': 'sell', 'price': 125, 'amount': 2.12},
+    {'id': 4, 'user_id': 1, 'currency': 'BTC',
+        'side': 'sell', 'price': 125, 'amount': 2.12},
+    {'id': 5, 'user_id': 1, 'currency': 'BTC',
+        'side': 'sell', 'price': 125, 'amount': 2.12},
 ]
 
 
-@app.get('/trades')
-def get_trades(limit: int = 2, offset: int = 0):
-    return fake_trades[offset:][:limit]
+class Trade(BaseModel):
+    id: int
+    user_id: int
+    currency: str = Field(max_length=5)
+    side: str
+    price: float = Field(ge=0)
+    amount: float
 
 
-fake_users2 = [
-    {"id": 1, "role": "admin", "name": "Bob"},
-    {"id": 2, "role": "investor", "name": "John"},
-    {"id": 3, "role": "trader", "name": "Matt"},
-]
-
-
-def get_user_by_id(user_id: int, user_list: list):
-    return list(filter(lambda user: user.get('id') == user_id, user_list))[0]
-
-
-@app.post('/users/{user_id}')
-def change_user_name(user_id: int, new_name: str):
-    current_user = get_user_by_id(user_id, fake_users2)
-    print(current_user)
-    current_user['name'] = new_name
-    return {'status': 200, 'data': current_user}
+@app.post('/trades')
+def add_trades(trades: List[Trade]):
+    fake_trades.extend(trades)
+    return {'status': 200, 'data': fake_trades}
 
 
 if __name__ == '__main__':
