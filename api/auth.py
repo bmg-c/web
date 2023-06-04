@@ -1,6 +1,6 @@
 from services import auth
 from pydantic import EmailStr
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, Response
 from schemas import Register, Login, ValidateCode, Recover, Details, FullUserInfo
 
 router = APIRouter(tags=['Authentication'], prefix='/auth')
@@ -17,8 +17,8 @@ def Logging_in(data: Login) -> Details:
 
 
 @router.put('/send_verify_code', response_model=Details)
-def Send_Verification_Code(mail_addr: EmailStr):
-    return auth.send_verify_code(str(mail_addr))
+def Send_Verification_Code(email_addr: EmailStr):
+    return auth.send_verify_code(email_addr)
 
 
 @router.post('/validate_code', response_model=Details)
@@ -29,3 +29,8 @@ def Validate_Sent_Code(data: ValidateCode):
 @router.put('/recover', response_model=Recover)
 def Recover_User(data: Recover):
     return auth.recover(data)
+
+
+@router.post('/logout', response_model=Details)
+def Logout(token: Request, response: Response):
+    return auth.logout(token, response)

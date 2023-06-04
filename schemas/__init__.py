@@ -1,2 +1,2 @@
 from schemas.auth import Details, Register, Login, ValidateCode, Recover
-from schemas.users import FullUserInfo
+from schemas.user import FullUserInfo, UserInfo, ChangeName, ChangePassword, ChangeAvatar

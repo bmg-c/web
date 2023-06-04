@@ -6,7 +6,7 @@ class Details(BaseModel):
 
 
 class Register(BaseModel):
-    mail: EmailStr
+    email: EmailStr = 'mail@email.com'
     password: constr(min_length=8, max_length=16,
                      regex=r'^[A-Za-z0-9!#$%&*+-.<=>?@^_]+$') = 'ciea,.htsnq'
     re_password: constr(min_length=8, max_length=16,
@@ -14,18 +14,18 @@ class Register(BaseModel):
 
 
 class Login(BaseModel):
-    mail: EmailStr
+    email: EmailStr = 'mail@email.com'
     password: constr(min_length=8, max_length=16,
                      regex=r'^[A-Za-z0-9!#$%&*+-.<=>?@^_]+$') = 'ciea,.htsnq'
 
 
 class ValidateCode(BaseModel):
-    mail: EmailStr
+    email: EmailStr = 'mail@email.com'
     code: str
 
 
 class Recover(BaseModel):
-    mail: EmailStr
+    email: EmailStr = 'mail@email.com'
     code: str
     new_password: constr(min_length=8, max_length=16,
                          regex=r'^[A-Za-z0-9!#$%&*+-.<=>?@^_]+$') = 'ciea,.htsnq'
