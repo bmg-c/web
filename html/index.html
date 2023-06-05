@@ -1,156 +1,148 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <title>Multitasker</title>
     <meta charset="utf-8" />
     <script src="../js/jquery-3.7.0.min.js"></script>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="buttons">
-        <button onclick="open_login()">Login</button>
-        <button onclick="open_register()">Register</button>
-        <script>
-            async function open_login() {
-                login_div = document.getElementById("login")
-                register_div = document.getElementById("register")
-
-                login_div.hidden = false
-                register_div.hidden = true
-            }
-        </script>
-        <script>
-            async function open_register() {
-                login_div = document.getElementById("login")
-                register_div = document.getElementById("register")
-
-                login_div.hidden = true
-                register_div.hidden = false
-            }
-        </script>
+      <button onclick="open_login()">Login</button>
+      <button onclick="open_register()">Register</button>
+      <script>
+        function open_login() {
+          $("#login").show();
+          $("#register").hide();
+        }
+      </script>
+      <script>
+        function open_register() {
+          $("#login").hide();
+          $("#register").show();
+        }
+      </script>
     </div>
     <div id="login">
-        <h2>Login</h2>
-        <p id="error_text" style="font-size:large"></p>
-        <h3>email</h3>
-        <input name="email" id="email_login" />
-        <h3>password</h3>
-        <input name="password" id="password_login" />
-        <button onclick="login_btn()">Send</button>
-        <script>
-            function login_btn() {
-                status = 0;
+      <h2>Login</h2>
+      <p id="error_text" style="font-size: large"></p>
+      <h3>email</h3>
+      <input name="email" id="email_login" />
+      <h3>password</h3>
+      <input name="password" id="password_login" />
+      <button onclick="login_btn()">Send</button>
+      <script>
+        function login_btn() {
+          status = 0;
 
-                fetch("/auth/login", {
-                    method: 'POST',
-                    headers: { "Accept": "application/json", "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        email: $("#email_login")[0].value,
-                        password: $("#password_login")[0].value
-                    })
-                })
-                    .then((response) => {
-                        status = response.status;
-                        data = response.json();
-                        return data
-                    })
-                    .then(data => {
-                        console.log(status);
-                        if (status == 200)
-                        {
-                            $("#login").hide();
-                            $("#register").hide();
-                            $("#buttons").hide();
-                            $("#my").show();
-                        }
-                        else if (status == 400)
-                        {
-                            $("#error_text").text(data.details);
-                        }
-                        else if (status == 422)
-                        {
-                            console.log(data);
-                            $("#error_text").text(data.detail[0].msg);
-                        }
-                    })
-            }
-        </script>
+          fetch("/auth/login", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: $("#email_login")[0].value,
+              password: $("#password_login")[0].value,
+            }),
+          })
+            .then((response) => {
+              status = response.status;
+              data = response.json();
+              return data;
+            })
+            .then((data) => {
+              console.log(status);
+              if (status == 200) {
+                $("#login").hide();
+                $("#register").hide();
+                $("#buttons").hide();
+                $("#my").show();
+              } else if (status == 400) $("#error_text").text(data.details);
+              else if (status == 422) $("#error_text").text(data.detail[0].msg);
+            });
+        }
+      </script>
     </div>
     <div id="register" hidden>
-        <h2>Register</h2>
-        <h3>email</h3>
-        <input name="email" id="email_register" />
-        <h3>password</h3>
-        <input name="password" id="password_register" />
-        <h3>re_password</h3>
-        <input name="re_password" id="re_password_register" />
-        <button onclick="register()">Send</button>
-        <script>
-            async function register() {
+      <h2>Register</h2>
+      <h3>email</h3>
+      <input name="email" id="email_register" />
+      <h3>password</h3>
+      <input name="password" id="password_register" />
+      <h3>re_password</h3>
+      <input name="re_password" id="re_password_register" />
+      <button onclick="register()">Send</button>
+      <script>
+        async function register() {
+          email = document.getElementById("email_register").value;
+          password = document.getElementById("password_register").value;
+          re_password = document.getElementById("re_password_register").value;
 
-                email = document.getElementById("email_register").value;
-                password = document.getElementById("password_register").value;
-                re_password = document.getElementById("re_password_register").value;
-
-                response = await fetch("/auth/register", {
-                    method: "POST",
-                    headers: { "Accept": "application/json", "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password,
-                        re_password: re_password
-                    })
-                });
-                console.log(response)
-                console.log(response.json())
-            }
-        </script>
+          response = await fetch("/auth/register", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: email,
+              password: password,
+              re_password: re_password,
+            }),
+          });
+          console.log(response);
+          console.log(response.json());
+        }
+      </script>
     </div>
     <div id="my" hidden>
-        <button onclick="logout()">logout</button>
-        <script>
-            async function logout() {
-                response = await fetch("/auth/logout", {
-                    method: "POST",
-                    headers: { "Accept": "application/json", "Content-Type": "application/json" },
-                    body: JSON.stringify({})
-                });
-            }
-        </script>
+      <button onclick="logout()">logout</button>
+      <script>
+        async function logout() {
+          response = await fetch("/auth/logout", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          });
+        }
+      </script>
     </div>
     <script>
-        async function is_logged_in() {
+      async function is_logged_in() {
+        response = await fetch("/auth/is_logged_in", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        });
+        data = await response.json();
+        details = data.details;
 
-            response = await fetch("/auth/is_logged_in", {
-                method: "POST",
-                headers: { "Accept": "application/json", "Content-Type": "application/json" },
-                body: JSON.stringify({})
-            });
-            data = await response.json();
-            details = data.details;
+        buttons_div = document.getElementById("buttons");
+        login_div = document.getElementById("login");
+        register_div = document.getElementById("register");
+        my_div = document.getElementById("my");
 
-            buttons_div = document.getElementById("buttons")
-            login_div = document.getElementById("login");
-            register_div = document.getElementById("register");
-            my_div = document.getElementById("my");
-
-            console.log("Logged in: " + details)
-            if (details == "N") {
-                buttons_div.hidden = false
-                login_div.hidden = false;
-                register_div.hidden = true;
-                my_div.hidden = true;
-            } else {
-                buttons_div.hidden = true;
-                login_div.hidden = true;
-                register_div.hidden = true;
-                my_div.hidden = false;
-            }
+        console.log("Logged in: " + details);
+        if (details == "N") {
+          buttons_div.hidden = false;
+          login_div.hidden = false;
+          register_div.hidden = true;
+          my_div.hidden = true;
+        } else {
+          buttons_div.hidden = true;
+          login_div.hidden = true;
+          register_div.hidden = true;
+          my_div.hidden = false;
         }
-        is_logged_in()
+      }
+      is_logged_in();
     </script>
-
-</body>
-
+  </body>
 </html>

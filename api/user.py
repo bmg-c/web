@@ -1,5 +1,5 @@
 from services import user
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, Request
 from schemas import Details, FullUserInfo, UserInfo, ChangeName, ChangePassword, ChangeAvatar
 from pydantic import EmailStr
 

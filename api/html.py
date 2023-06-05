@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-router = APIRouter()
+router = APIRouter(tags=['HTML'])
 
 @router.get('/', response_class=HTMLResponse)
 def Get_Root_HTML():
