@@ -34,3 +34,8 @@ def Recover_User(data: Recover):
 @router.post('/logout', response_model=Details)
 def Logout(token: Request, response: Response):
     return auth.logout(token, response)
+
+
+@router.post('/is_logged_in', response_model=Details)
+def Is_Logged_In(token: Request):
+    return auth.is_logged_in(token)

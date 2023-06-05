@@ -157,6 +157,17 @@ class Auth:
         response = JSONResponse({'details': 'Вы вышли из акаунта.'}, 200)
         response.delete_cookie('token')
         return response
+    
+    def is_logged_in(self, token: Request):
+        token = token.cookies.get('token')
+        key = 'manilovefishing'
+        try:
+            cookie = jwt.decode(token, key, algorithms="HS256")
+            print(cookie)
+        except Exception:
+            return JSONResponse({'details': 'N'}, 200)
+        
+        return JSONResponse({'details': 'Y'}, 200)
 
 
 auth = Auth()
