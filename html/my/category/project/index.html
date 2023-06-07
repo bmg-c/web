@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Multitasker Project</title>
+        <meta charset="utf-8" />
+        <script src="../../../js/jquery-3.7.0.min.js"></script>
+        <script>
+            // Checking if the user is logged in
+            status = 0;
+
+            fetch("/auth/is_logged_in", {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => {
+                    status = response.status;
+                    data = response.json();
+                    return data;
+                })
+                .then((data) => {
+                    if (data.details == "N") {
+                        window.location.href = "/";
+                    }
+                });
+        </script>
+    </head>
+
+    <body>
+        <div id="buttons">
+            <button type="button" onclick="redirect_assign()">go to assign</button>
+            <button type="button" onclick="redirect_auth()">go to auth</button>
+            <script>
+                function redirect_assign() {
+                    window.location.href = "/assign"
+                }
+                function redirect_auth() {
+                    window.location.href = "/"
+                }
+            </script>
+        </div>
+        <h2 id="category_id"></h2>
+        <script>
+            $("#category_id").text(window.location.href.slice(25, 61));
+        </script>
+        <h1 id="project_id"></h1>
+        <script>
+            $("#project_id").text(window.location.href.slice(62, 98));
+        </script>
+        <div id="tasks"></div>
+        <script>
+            status = 0;
+            category_id = $("#category_id")[0].innerHTML;
+            project_id = $("#project_id")[0].innerHTML;
+
+            fetch(`/my/${category_id}/${project_id}/show_tasks`, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => {
+                    status = response.status;
+                    data = response.json();
+                    return data;
+                })
+                .then((data) => {
+                    html = "";
+                    // console.log(data.tasks);
+                    // console.log(data)
+
+                    for (task of data.tasks) {
+                        console.log(task);
+                        html += `<div>
+                                <p style="margin: 2px">id: ${task.task_id}</p>
+                                <p style="margin: 2px">name: ${task.name}</p>
+                                <p style="margin: 2px">description: ${task.description}</p>
+                                <p style="margin: 2px">indicator: ${task.indicator}</p>
+                                <p style="margin: 2px">is_complete: ${task.is_complete}</p>
+                                <p style="margin: 2px">executor: ${task.executor}</p>
+                                <p style="margin: 2px">executor_id: ${task.executor_id}</p>
+                                <p style="margin: 2px">deadline: ${task.deadline}</p>
+                                <p style="margin: 2px">date_creation: ${task.date_creation}</p>
+                                <p style="margin: 2px">date_change: ${task.date_change}</p>
+                            </div>
+                            <div style="
+                                width: 100%;
+                                height: 1px;
+                                background-color: blue;
+                                margin-top: 10px;
+                                margin-bottom: 10px;"></div>`;
+                    }
+                    $("#tasks")[0].innerHTML = html;
+                });
+        </script>
+        <div
+            style="
+                width: 100%;
+                height: 3px;
+                background-color: blueviolet;
+                margin-top: 30px;
+                margin-bottom: 30px;
+            "
+        ></div>
+        <p id="message"></p>
+        <div id="new_task">
+            <p style="font-size: large">Add new task</p>
+            <input name="name" id="new_task_name" value="name" />
+            <input
+                name="description"
+                id="new_task_description"
+                value="description"
+            />
+            <input name="executor" id="new_task_executor" value="executor" />
+            <input name="deadline" id="new_task_deadline" value="deadline" />
+            <input name="indicator" id="new_task_indicator" value="indicator" />
+            <button type="button" onclick="add_new_task()">add</button>
+            <script>
+                function add_new_task() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+
+                    fetch(`/my/${category_id}/${project_id}/create_task`, {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            name: $("#new_task_name")[0].value,
+                            executor: $("#new_task_executor")[0].value,
+                            description: $("#new_task_description")[0].value,
+                            deadline: $("#new_task_deadline")[0].value,
+                            indicator: $("#new_task_indicator")[0].value,
+                        }),
+                    })
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_name_task">
+            <p style="font-size: large">Change task name</p>
+            <input name="task_id" id="change_name_task_id" value="task Id" />
+            <input name="name" id="change_new_name" value="New Name" />
+            <button type="button" onclick="change_name()">change</button>
+            <script>
+                function change_name() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${
+                            $("#change_name_task_id")[0].value
+                        }/change_name`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                name: $("#change_new_name")[0].value,
+                            }),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422) {
+                                console.log(data.detail)
+                                $("#message").text(data.detail[0].msg);
+                            }
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_description_task">
+            <p style="font-size: large">Change task description</p>
+            <input
+                name="task_id"
+                id="change_description_task_id"
+                value="task Id"
+            />
+            <input
+                name="description"
+                id="change_new_description"
+                value="New Description"
+            />
+            <button type="button" onclick="change_description()">change</button>
+            <script>
+                function change_description() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${
+                            $("#change_description_task_id")[0].value
+                        }/change_description`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                description: $("#change_new_description")[0].value,
+                            }),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_executor_task">
+            <p style="font-size: large">Change task executor</p>
+            <input
+                name="task_id"
+                id="change_executor_task_id"
+                value="task Id"
+            />
+            <input
+                name="executor"
+                id="change_new_executor"
+                value="New Executor"
+            />
+            <button type="button" onclick="change_executor()">change</button>
+            <script>
+                function change_executor() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${
+                            $("#change_executor_task_id")[0].value
+                        }/change_executor`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                executor: $("#change_new_executor")[0].value,
+                            }),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_indicator_task">
+            <p style="font-size: large">Change task indicator</p>
+            <input
+                name="task_id"
+                id="change_indicator_task_id"
+                value="task Id"
+            />
+            <input
+                name="indicator"
+                id="change_new_indicator"
+                value="New Indicator"
+            />
+            <button type="button" onclick="change_indicator()">change</button>
+            <script>
+                function change_indicator() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${
+                            $("#change_indicator_task_id")[0].value
+                        }/change_indicator`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                indicator: $("#change_new_indicator")[0].value,
+                            }),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_deadline_task">
+            <p style="font-size: large">Change task deadline</p>
+            <input
+                name="task_id"
+                id="change_deadline_task_id"
+                value="task Id"
+            />
+            <input
+                name="deadline"
+                id="change_new_deadline"
+                value="New Deadline"
+            />
+            <button type="button" onclick="change_deadline()">change</button>
+            <script>
+                function change_deadline() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${
+                            $("#change_deadline_task_id")[0].value
+                        }/change_deadline`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                deadline: $("#change_new_deadline")[0].value,
+                            }),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="delete_task">
+            <p style="font-size: large">Delete task</p>
+            <input name="task_id" id="delete_task_id" value="task Id" />
+            <button type="button" onclick="delete_task()">delete</button>
+            <script>
+                function delete_task() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${
+                            $("#delete_task_id")[0].value
+                        }/delete`,
+                        {
+                            method: "DELETE",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({}),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="go_to_task">
+            <p style="font-size: large">Go to task</p>
+            <input name="task_id" id="go_task_id" value="task Id" />
+            <button type="button" onclick="go_to_task()">go</button>
+            <script>
+                function go_to_task() {
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+
+                    window.location.href = `/my/${category_id}/${project_id}/${
+                        $("#go_task_id")[0].value
+                    }/dashboard`;
+                }
+            </script>
+        </div>
+    </body>
+</html>

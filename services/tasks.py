@@ -61,10 +61,13 @@ class Tasks:
                         with open('./data/my.json', 'w') as file:
                             file.write(json.dumps(categories_db))
 
+                        # return JSONResponse({
+                        #     'task_id': task['task_id'],
+                        #     'name': task['name']
+                        # }, 200)
                         return JSONResponse({
-                            'task_id': task['task_id'],
-                            'name': task['name']
-                        }, 200)
+                            'details': 'Задача успешно создана.'}, 200)
+
                 return JSONResponse({
                     'details': 'Такого проекта не существует.'}, 400)
         return JSONResponse({'details': 'Такой категории не существует.'}, 400)
@@ -417,7 +420,7 @@ class Tasks:
         return JSONResponse({'details': 'Такой категории не существует.'}, 400)
 
     def uncomplete_task(self, category_id: str, project_id: str,
-                      task_id: str, token: Request):
+                        task_id: str, token: Request):
         token = token.cookies.get('token')
         key = 'manilovefishing'
         try:

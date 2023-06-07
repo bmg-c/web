@@ -31,3 +31,7 @@ class ChangePassword(BaseModel):
 
 class ChangeAvatar(BaseModel):
     new_avatar: conint(ge=0, le=9) = 0
+
+
+class ChangeEmail(BaseModel):
+    email: EmailStr = 'mail@email.com'

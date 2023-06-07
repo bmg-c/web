@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Multitasker User</title>
+        <meta charset="utf-8" />
+        <script src="../../js/jquery-3.7.0.min.js"></script>
+    </head>
+
+    <body>
+        <div id="buttons">
+            <button type="button" onclick="redirect_assign()">
+                go to assign
+            </button>
+            <button type="button" onclick="redirect_auth()">go to auth</button>
+            <script>
+                function redirect_assign() {
+                    window.location.href = "/assign";
+                }
+                function redirect_auth() {
+                    window.location.href = "/";
+                }
+            </script>
+        </div>
+        <h1 id="user_id"></h1>
+        <script>
+            $("#user_id").text(window.location.href.slice(28, 64));
+        </script>
+        <div id="user"></div>
+        <script>
+            status = 0;
+            user_id = $("#user_id")[0].innerHTML;
+
+            fetch(`/users/${user_id}/info`, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => {
+                    status = response.status;
+                    data = response.json();
+                    return data;
+                })
+                .then((data) => {
+                    html = `
+                                <p style="margin: 2px">email: ${data.email}</p>
+                                <p style="margin: 2px">name: ${data.name}</p>
+                                <p style="margin: 2px">avatar: ${data.avatar}</p>
+                            `;
+                    $("#user")[0].innerHTML = html;
+                });
+        </script>
+        <div
+            style="
+                width: 100%;
+                height: 3px;
+                background-color: blueviolet;
+                margin-top: 30px;
+                margin-bottom: 30px;
+            "
+        ></div>
+        <h1>Edit YOUR profile's info</h1>
+        <p id="message"></p>
+        <div id="change_name">
+            <p style="font-size: large">Change Name</p>
+            <input name="name" id="new_name" value="name" />
+            <button type="button" onclick="change_name()">change</button>
+            <script>
+                function change_name() {
+                    status = 0;
+                    user_id = $("#user_id")[0].innerHTML;
+
+                    fetch(`/users/change_name`, {
+                        method: "PUT",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            name: $("#new_name")[0].value,
+                        }),
+                    })
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_password">
+            <p style="font-size: large">Change Password</p>
+            <input name="name" id="old_password" value="old" />
+            <input name="name" id="new_password" value="new" />
+            <input name="name" id="re_new_password" value="re_new" />
+            <button type="button" onclick="change_password()">change</button>
+            <script>
+                function change_password() {
+                    status = 0;
+                    user_id = $("#user_id")[0].innerHTML;
+
+                    fetch(`/users/change_name`, {
+                        method: "PUT",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            old_password: $("#old_password")[0].value,
+                            new_password: $("#new_password")[0].value,
+                            re_new_password: $("#re_new_password")[0].value,
+                        }),
+                    })
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_email">
+            <p style="font-size: large">Change Email</p>
+            <input name="name" id="new_email" value="email" />
+            <button type="button" onclick="change_email()">change</button>
+            <script>
+                function change_name() {
+                    status = 0;
+                    user_id = $("#user_id")[0].innerHTML;
+
+                    fetch(`/users/change_name`, {
+                        method: "PUT",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            email: $("#new_email")[0].value,
+                        }),
+                    })
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_avatar">
+            <p style="font-size: large">Change Avatar</p>
+            <input name="name" id="new_avatar" value="avatar" />
+            <button type="button" onclick="change_avatar()">change</button>
+            <script>
+                function change_avatar() {
+                    status = 0;
+                    user_id = $("#user_id")[0].innerHTML;
+
+                    fetch(`/users/change_name`, {
+                        method: "PUT",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            avatar: Number($("#new_avatar")[0].value),
+                        }),
+                    })
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+    </body>
+</html>

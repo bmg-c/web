@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Multisubtasker Task</title>
+        <meta charset="utf-8" />
+        <script src="../../../../js/jquery-3.7.0.min.js"></script>
+        <script>
+            // Checking if the user is logged in
+            status = 0;
+
+            fetch("/auth/is_logged_in", {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => {
+                    status = response.status;
+                    data = response.json();
+                    return data;
+                })
+                .then((data) => {
+                    if (data.details == "N") {
+                        window.location.href = "/";
+                    }
+                });
+        </script>
+    </head>
+
+    <body>
+        <div id="buttons">
+            <button type="button" onclick="redirect_assign()">go to assign</button>
+            <button type="button" onclick="redirect_auth()">go to auth</button>
+            <script>
+                function redirect_assign() {
+                    window.location.href = "/assign"
+                }
+                function redirect_auth() {
+                    window.location.href = "/"
+                }
+            </script>
+        </div>
+        <h3 id="category_id"></h3>
+        <script>
+            $("#category_id").text(window.location.href.slice(25, 61));
+        </script>
+        <h2 id="project_id"></h2>
+        <script>
+            $("#project_id").text(window.location.href.slice(62, 98));
+        </script>
+        <h1 id="task_id"></h1>
+        <script>
+            $("#task_id").text(window.location.href.slice(99, 135));
+        </script>
+        <div id="subtasks"></div>
+        <script>
+            status = 0;
+            category_id = $("#category_id")[0].innerHTML;
+            project_id = $("#project_id")[0].innerHTML;
+            task_id = $("#task_id")[0].innerHTML;
+
+            fetch(`/my/${category_id}/${project_id}/${task_id}/show_subtasks`, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => {
+                    status = response.status;
+                    data = response.json();
+                    return data;
+                })
+                .then((data) => {
+                    html = "";
+                    // console.log(data.subtasks);
+                    // console.log(data)
+
+                    for (subtask of data.tasks) {
+                        console.log(subtask);
+                        html += `<div>
+                                <p style="margin: 2px">id: ${subtask.subtask_id}</p>
+                                <p style="margin: 2px">name: ${subtask.name}</p>
+                                <p style="margin: 2px">description: ${subtask.description}</p>
+                                <p style="margin: 2px">indicator: ${subtask.indicator}</p>
+                                <p style="margin: 2px">is_complete: ${subtask.is_complete}</p>
+                                <p style="margin: 2px">executor: ${subtask.executor}</p>
+                                <p style="margin: 2px">executor_id: ${subtask.executor_id}</p>
+                                <p style="margin: 2px">deadline: ${subtask.deadline}</p>
+                                <p style="margin: 2px">date_creation: ${subtask.date_creation}</p>
+                                <p style="margin: 2px">date_change: ${subtask.date_change}</p>
+                            </div>
+                            <div style="
+                                width: 100%;
+                                height: 1px;
+                                background-color: blue;
+                                margin-top: 10px;
+                                margin-bottom: 10px;"></div>`;
+                    }
+                    $("#subtasks")[0].innerHTML = html;
+                });
+        </script>
+        <div
+            style="
+                width: 100%;
+                height: 3px;
+                background-color: blueviolet;
+                margin-top: 30px;
+                margin-bottom: 30px;
+            "
+        ></div>
+        <p id="message"></p>
+        <div id="new_subtask">
+            <p style="font-size: large">Add new subtask</p>
+            <input name="name" id="new_subtask_name" value="name" />
+            <input
+                name="description"
+                id="new_subtask_description"
+                value="description"
+            />
+            <input name="executor" id="new_subtask_executor" value="executor" />
+            <input name="deadline" id="new_subtask_deadline" value="deadline" />
+            <input
+                name="indicator"
+                id="new_subtask_indicator"
+                value="indicator"
+            />
+            <button type="button" onclick="add_new_subtask()">add</button>
+            <script>
+                function add_new_subtask() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+                    task_id = $("#task_id")[0].innerHTML;
+
+                    fetch(`/my/${category_id}/${project_id}/${task_id}/create_subtask`, {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            name: $("#new_subtask_name")[0].value,
+                            executor: $("#new_subtask_executor")[0].value,
+                            description: $("#new_subtask_description")[0].value,
+                            deadline: $("#new_subtask_deadline")[0].value,
+                            indicator: $("#new_subtask_indicator")[0].value,
+                        }),
+                    })
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_name_subtask">
+            <p style="font-size: large">Change subtask name</p>
+            <input
+                name="subtask_id"
+                id="change_name_subtask_id"
+                value="subtask Id"
+            />
+            <input name="name" id="change_new_name" value="New Name" />
+            <button type="button" onclick="change_name()">change</button>
+            <script>
+                function change_name() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+                    task_id = $("#task_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${task_id}/${
+                            $("#change_name_subtask_id")[0].value
+                        }/change_name`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                name: $("#change_new_name")[0].value,
+                            }),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422) {
+                                console.log(data.detail);
+                                $("#message").text(data.detail[0].msg);
+                            }
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_description_subtask">
+            <p style="font-size: large">Change subtask description</p>
+            <input
+                name="subtask_id"
+                id="change_description_subtask_id"
+                value="subsubtask Id"
+            />
+            <input
+                name="description"
+                id="change_new_description"
+                value="New Description"
+            />
+            <button type="button" onclick="change_description()">change</button>
+            <script>
+                function change_description() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+                    task_id = $("#task_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${task_id}/${
+                            $("#change_description_subtask_id")[0].value
+                        }/change_description`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                description: $("#change_new_description")[0]
+                                    .value,
+                            }),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_executor_subtask">
+            <p style="font-size: large">Change subtask executor</p>
+            <input
+                name="subtask_id"
+                id="change_executor_subtask_id"
+                value="subsubtask Id"
+            />
+            <input
+                name="executor"
+                id="change_new_executor"
+                value="New Executor"
+            />
+            <button type="button" onclick="change_executor()">change</button>
+            <script>
+                function change_executor() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+                    task_id = $("#task_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${task_id}/${
+                            $("#change_executor_subtask_id")[0].value
+                        }/change_executor`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                executor: $("#change_new_executor")[0].value,
+                            }),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_indicator_subtask">
+            <p style="font-size: large">Change subtask indicator</p>
+            <input
+                name="subtask_id"
+                id="change_indicator_subtask_id"
+                value="subsubtask Id"
+            />
+            <input
+                name="indicator"
+                id="change_new_indicator"
+                value="New Indicator"
+            />
+            <button type="button" onclick="change_indicator()">change</button>
+            <script>
+                function change_indicator() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+                    task_id = $("#task_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${task_id}/${
+                            $("#change_indicator_subtask_id")[0].value
+                        }/change_indicator`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                indicator: $("#change_new_indicator")[0].value,
+                            }),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="change_deadline_subtask">
+            <p style="font-size: large">Change subtask deadline</p>
+            <input
+                name="subtask_id"
+                id="change_deadline_subtask_id"
+                value="subsubtask Id"
+            />
+            <input
+                name="deadline"
+                id="change_new_deadline"
+                value="New Deadline"
+            />
+            <button type="button" onclick="change_deadline()">change</button>
+            <script>
+                function change_deadline() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+                    task_id = $("#task_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${task_id}/${
+                            $("#change_deadline_subtask_id")[0].value
+                        }/change_deadline`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                deadline: $("#change_new_deadline")[0].value,
+                            }),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+        <div id="delete_subtask">
+            <p style="font-size: large">Delete subtask</p>
+            <input
+                name="subtask_id"
+                id="delete_subtask_id"
+                value="subtask Id"
+            />
+            <button type="button" onclick="delete_subtask()">delete</button>
+            <script>
+                function delete_subtask() {
+                    status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
+                    project_id = $("#project_id")[0].innerHTML;
+                    task_id = $("#task_id")[0].innerHTML;
+
+                    fetch(
+                        `/my/${category_id}/${project_id}/${task_id}/${
+                            $("#delete_subtask_id")[0].value
+                        }/delete`,
+                        {
+                            method: "DELETE",
+                            headers: {
+                                Accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({}),
+                        }
+                    )
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            if (status == 200) $("#message").text(data.details);
+                            else if (status == 400)
+                                $("#message").text(data.details);
+                            else if (status == 422)
+                                $("#message").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
+    </body>
+</html>

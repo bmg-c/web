@@ -1,12 +1,11 @@
 from services import tasks
 from fastapi import APIRouter, Request
-from schemas import Details, CreateTaskInfo, NewTask, TaskList, TaskName, TaskDescription, TaskDeadline
-from pydantic import EmailStr
+from schemas import Details, NewTask, TaskList, TaskName, TaskDescription, TaskDeadline, TaskExecutor, TaskIndicator
 
 router = APIRouter(tags=['Tasks'], prefix='/my/{category_id}/{project_id}')
 
 
-@router.post('/create_task', response_model=CreateTaskInfo | Details)
+@router.post('/create_task', response_model=Details)
 def Create_Task(category_id: str, project_id: str,
                 data: NewTask, token: Request):
     return tasks.create_task(category_id, project_id, data, token)
@@ -26,9 +25,9 @@ def Change_Task_Name(category_id: str, project_id: str, task_id: str,
 
 @router.put('/{task_id}/change_executor', response_model=Details)
 def Change_Task_Executor(category_id: str, project_id: str, task_id: str,
-                         executor: EmailStr, token: Request):
+                         executor: TaskExecutor, token: Request):
     return tasks.change_task_executor(category_id, project_id,
-                                      task_id, executor, token)
+                                      task_id, executor.executor, token)
 
 
 @router.put('/{task_id}/change_description', response_model=Details)
@@ -47,9 +46,9 @@ def Change_Task_Deadline(category_id: str, project_id: str, task_id: str,
 
 @router.put('/{task_id}/change_indicator', response_model=Details)
 def Change_Task_Indicator(category_id: str, project_id: str, task_id: str,
-                          indicator: str, token: Request):
+                          indicator: TaskIndicator, token: Request):
     return tasks.change_task_indicator(category_id, project_id,
-                                       task_id, indicator, token)
+                                       task_id, indicator.indicator, token)
 
 
 @router.delete('/{task_id}/delete', response_model=Details)

@@ -1,12 +1,11 @@
 from services import user
 from fastapi import APIRouter, Request
-from schemas import Details, FullUserInfo, UserInfo, ChangeName, ChangePassword, ChangeAvatar
-from pydantic import EmailStr
+from schemas import Details, FullUserInfo, UserInfo, ChangeName, ChangePassword, ChangeAvatar, ChangeEmail
 
 router = APIRouter(tags=['Users'], prefix='/users')
 
 
-@router.post('/get_user_info', response_model=UserInfo | Details)
+@router.get('/{user_id}/info', response_model=UserInfo | Details)
 def Get_User_Information(user_id: str):
     return user.get_user_info(user_id)
 
@@ -27,5 +26,5 @@ def Change_Avatar(data: ChangeAvatar, token: Request):
 
 
 @router.put('/change_email', response_model=Details)
-def Change_Email(email_addr: EmailStr, token: Request):
-    return user.change_email(email_addr, token)
+def Change_Email(email_addr: ChangeEmail, token: Request):
+    return user.change_email(email_addr.email, token)

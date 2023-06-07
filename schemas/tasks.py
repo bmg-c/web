@@ -1,11 +1,6 @@
 from pydantic import BaseModel, constr, EmailStr
 
 
-class CreateTaskInfo(BaseModel):
-    task_id: str
-    name: constr(max_length=100) = 'Название'
-
-
 class NewTask(BaseModel):
     name: constr(max_length=100) = 'Название'
     executor: EmailStr
@@ -21,6 +16,14 @@ class TaskName(BaseModel):
 
 class TaskDescription(BaseModel):
     description: constr(max_length=10000) = 'Описание'
+
+
+class TaskExecutor(BaseModel):
+    executor: EmailStr
+
+
+class TaskIndicator(BaseModel):
+    indicator: str
 
 
 class TaskDeadline(BaseModel):

@@ -49,9 +49,6 @@ class Categories:
                     'name': category['name']
                 })
 
-        with open('./data/my.json', 'w') as file:
-            file.write(json.dumps(categories_db))
-
         return JSONResponse({
             'categories': categories}, 200)
 

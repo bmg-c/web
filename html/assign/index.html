@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Multitasker Assign</title>
+        <meta charset="utf-8" />
+        <script src="../js/jquery-3.7.0.min.js"></script>
+        <script>
+            // Checking if the user is logged in
+            status = 0;
+
+            fetch("/auth/is_logged_in", {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => {
+                    status = response.status;
+                    data = response.json();
+                    return data;
+                })
+                .then((data) => {
+                    if (data.details == "N") {
+                        window.location.href = "/";
+                    }
+                });
+        </script>
+    </head>
+
+    <body>
+        <div id="buttons">
+            <button type="button" onclick="my()">go to my</button>
+            <button type="button" onclick="auth()">go to auth</button>
+            <script>
+                function my() {
+                    window.location.href = "/my"
+                }
+                function auth() {
+                    window.location.href = "/"
+                }
+            </script>
+        </div>
+        <h1>Completed</h1>
+        <div id="completed"></div>
+        <div
+            style="
+                width: 100%;
+                height: 3px;
+                background-color: blueviolet;
+                margin-top: 30px;
+                margin-bottom: 30px;
+            "
+        ></div>
+        <h1>Uncompleted</h1>
+        <div id="uncompleted"></div>
+        <script>
+            status = 0;
+
+            fetch(`/assign/show_assign`, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => {
+                    status = response.status;
+                    data = response.json();
+                    return data;
+                })
+                .then((data) => {
+                    console.log(data);
+                    html = "";
+                    for (assign of data.complete_list) {
+                        html += `<div>
+                                <p style="margin: 2px">category_id: ${assign.category_id}</p>
+                                <p style="margin: 2px">project_id: ${assign.project_id}</p>
+                                <p style="margin: 2px">task_id: ${assign.task_id}</p>
+                                <p style="margin: 2px">subtask_id: ${assign.subtask_id}</p>
+                                <p style="margin: 2px">name: ${assign.name}</p>
+                                <p style="margin: 2px">description: ${assign.description}</p>
+                                <p style="margin: 2px">indicator: ${assign.indicator}</p>
+                                <p style="margin: 2px">time_indicator: ${assign.tame_indicator}</p>
+                                <p style="margin: 2px">deadline: ${assign.deadline}</p>
+                                <p style="margin: 2px">author: ${assign.author}</p>
+                            </div>
+                            <div style="
+                                width: 100%;
+                                height: 1px;
+                                background-color: blue;
+                                margin-top: 10px;
+                                margin-bottom: 10px;"></div>`;
+                    }
+                    $("#completed")[0].innerHTML = html;
+
+                    html = "";
+                    for (assign of data.incomplete_list) {
+                        html += `<div>
+                                <p style="margin: 2px">category_id: ${assign.category_id}</p>
+                                <p style="margin: 2px">project_id: ${assign.project_id}</p>
+                                <p style="margin: 2px">task_id: ${assign.task_id}</p>
+                                <p style="margin: 2px">subtask_id: ${assign.subtask_id}</p>
+                                <p style="margin: 2px">name: ${assign.name}</p>
+                                <p style="margin: 2px">description: ${assign.description}</p>
+                                <p style="margin: 2px">indicator: ${assign.indicator}</p>
+                                <p style="margin: 2px">time_indicator: ${assign.tame_indicator}</p>
+                                <p style="margin: 2px">deadline: ${assign.deadline}</p>
+                                <p style="margin: 2px">author: ${assign.author}</p>
+                            </div>
+                            <div style="
+                                width: 100%;
+                                height: 1px;
+                                background-color: blue;
+                                margin-top: 10px;
+                                margin-bottom: 10px;"></div>`;
+                    }
+                    $("#uncompleted")[0].innerHTML = html;
+                });
+        </script>
+        <div
+            style="
+                width: 100%;
+                height: 3px;
+                background-color: blueviolet;
+                margin-top: 30px;
+                margin-bottom: 30px;
+            "
+        ></div>
+        <div
+            style="
+                width: 100%;
+                height: 3px;
+                background-color: blueviolet;
+                margin-top: 30px;
+                margin-bottom: 30px;
+            "
+        ></div>
+
+        <p id="message"></p>
+        <div id="new_task">
+            <p style="font-size: large">Complete/Uncomplete Task</p>
+            <input name="category_id" id="category_id" value="category_id" />
+            <input name="project_id" id="project_id" value="project_id" />
+            <input name="task_id" id="task_id" value="task_id" />
+            <input name="subtask_id" id="subtask_id" value="subtask_id" />
+            <button type="button" onclick="complete_task()">complete</button>
+            <button type="button" onclick="uncomplete_task()">
+                uncomplete
+            </button>
+            <script>
+                function complete_task() {
+                    status = 0;
+                    category_id = $("#category_id")[0].value;
+                    project_id = $("#project_id")[0].value;
+                    task_id = $("#task_id")[0].value;
+                    subtask_id = $("#subtask_id")[0].value;
+
+                    if (subtask_id == "") {
+                        fetch(
+                            `/my/${category_id}/${project_id}/${task_id}/complete`,
+                            {
+                                method: "PUT",
+                                headers: {
+                                    Accept: "application/json",
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({}),
+                            }
+                        )
+                            .then((response) => {
+                                status = response.status;
+                                data = response.json();
+                                return data;
+                            })
+                            .then((data) => {
+                                if (status == 200)
+                                    $("#message").text(data.details);
+                                else if (status == 400)
+                                    $("#message").text(data.details);
+                                else if (status == 422)
+                                    $("#message").text(data.detail[0].msg);
+                            });
+                    } else {
+                        fetch(
+                            `/my/${category_id}/${project_id}/${task_id}/${subtask_id}/complete`,
+                            {
+                                method: "PUT",
+                                headers: {
+                                    Accept: "application/json",
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({}),
+                            }
+                        )
+                            .then((response) => {
+                                status = response.status;
+                                data = response.json();
+                                return data;
+                            })
+                            .then((data) => {
+                                if (status == 200)
+                                    $("#message").text(data.details);
+                                else if (status == 400)
+                                    $("#message").text(data.details);
+                                else if (status == 422)
+                                    $("#message").text(data.detail[0].msg);
+                            });
+                    }
+                }
+
+                function uncomplete_task() {
+                    status = 0;
+                    category_id = $("#category_id")[0].value;
+                    project_id = $("#project_id")[0].value;
+                    task_id = $("#task_id")[0].value;
+                    subtask_id = $("#subtask_id")[0].value;
+
+                    if (subtask_id == "") {
+                        fetch(
+                            `/my/${category_id}/${project_id}/${task_id}/uncomplete`,
+                            {
+                                method: "PUT",
+                                headers: {
+                                    Accept: "application/json",
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({}),
+                            }
+                        )
+                            .then((response) => {
+                                status = response.status;
+                                data = response.json();
+                                return data;
+                            })
+                            .then((data) => {
+                                if (status == 200)
+                                    $("#message").text(data.details);
+                                else if (status == 400)
+                                    $("#message").text(data.details);
+                                else if (status == 422)
+                                    $("#message").text(data.detail[0].msg);
+                            });
+                    } else {
+                        fetch(
+                            `/my/${category_id}/${project_id}/${task_id}/${subtask_id}/uncomplete`,
+                            {
+                                method: "PUT",
+                                headers: {
+                                    Accept: "application/json",
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({}),
+                            }
+                        )
+                            .then((response) => {
+                                status = response.status;
+                                data = response.json();
+                                return data;
+                            })
+                            .then((data) => {
+                                if (status == 200)
+                                    $("#message").text(data.details);
+                                else if (status == 400)
+                                    $("#message").text(data.details);
+                                else if (status == 422)
+                                    $("#message").text(data.detail[0].msg);
+                            });
+                    }
+                }
+            </script>
+        </div>
+    </body>
+</html>

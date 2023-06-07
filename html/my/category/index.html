@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Multitasker Main</title>
+        <title>Multitasker Category</title>
         <meta charset="utf-8" />
-        <script src="../js/jquery-3.7.0.min.js"></script>
+        <script src="../../js/jquery-3.7.0.min.js"></script>
         <script>
             // Checking if the user is logged in
             status = 0;
@@ -41,11 +41,16 @@
                 }
             </script>
         </div>
-        <div id="categories"></div>
+        <h1 id="category_id"></h1>
+        <script>
+            $("#category_id").text(window.location.href.slice(25, 61));
+        </script>
+        <div id="projects"></div>
         <script>
             status = 0;
+            category_id = $("#category_id")[0].innerHTML;
 
-            fetch("/my/show_categories", {
+            fetch(`/my/${category_id}/show_projects`, {
                 method: "GET",
                 headers: {
                     Accept: "application/json",
@@ -59,13 +64,13 @@
                 })
                 .then((data) => {
                     html = "";
-                    // console.log(data.categories);
+                    // console.log(data.projects);
                     // console.log(data)
 
-                    for (category of data.categories) {
+                    for (project of data.projects) {
                         html += `<div>
-                                <p style="margin: 2px">id: ${category.category_id}</p>
-                                <p style="margin: 2px">name: ${category.name}</p>
+                                <p style="margin: 2px">id: ${project.project_id}</p>
+                                <p style="margin: 2px">name: ${project.name}</p>
                             </div>
                             <div style="
                                 width: 100%;
@@ -74,7 +79,7 @@
                                 margin-top: 10px;
                                 margin-bottom: 10px;"></div>`;
                     }
-                    $("#categories")[0].innerHTML = html;
+                    $("#projects")[0].innerHTML = html;
                 });
         </script>
         <div
@@ -87,22 +92,23 @@
             "
         ></div>
         <p id="message"></p>
-        <div id="new_category">
-            <p style="font-size: large">Add new category</p>
-            <input name="name" id="new_category_name" value="name" />
-            <button type="button" onclick="add_new_category()">add</button>
+        <div id="new_project">
+            <p style="font-size: large">Add new project</p>
+            <input name="name" id="new_project_name" value="name" />
+            <button type="button" onclick="add_new_project()">add</button>
             <script>
-                function add_new_category() {
+                function add_new_project() {
                     status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
 
-                    fetch("/my/create_category", {
+                    fetch(`/my/${category_id}/create_project`, {
                         method: "POST",
                         headers: {
                             Accept: "application/json",
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
-                            name: $("#new_category_name")[0].value,
+                            name: $("#new_project_name")[0].value,
                         }),
                     })
                         .then((response) => {
@@ -120,23 +126,24 @@
                 }
             </script>
         </div>
-        <div id="change_category_name">
-            <p style="font-size: large">Change category name</p>
+        <div id="change_project_name">
+            <p style="font-size: large">Change project name</p>
             <input
-                name="category_id"
-                id="change_category_id"
-                value="Category Id"
+                name="project_id"
+                id="change_project_id"
+                value="project Id"
             />
             <input name="name" id="change_new_name" value="New Name" />
             <button type="button" onclick="change_name()">change</button>
             <script>
                 function change_name() {
                     status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
 
                     fetch(
-                        `/my/${
-                            $("#change_category_id")[0].value
-                        }/change_category_name`,
+                        `/my/${category_id}/${
+                            $("#change_project_id")[0].value
+                        }/change_project_name`,
                         {
                             method: "PUT",
                             headers: {
@@ -163,22 +170,23 @@
                 }
             </script>
         </div>
-        <div id="delete_category">
-            <p style="font-size: large">Delete Category</p>
+        <div id="delete_project">
+            <p style="font-size: large">Delete project</p>
             <input
-                name="category_id"
-                id="delete_category_id"
-                value="Category Id"
+                name="project_id"
+                id="delete_project_id"
+                value="project Id"
             />
-            <button type="button" onclick="delete_category()">delete</button>
+            <button type="button" onclick="delete_project()">delete</button>
             <script>
-                function delete_category() {
+                function delete_project() {
                     status = 0;
+                    category_id = $("#category_id")[0].innerHTML;
 
                     fetch(
-                        `/my/${
-                            $("#delete_category_id")[0].value
-                        }/delete_category`,
+                        `/my/${category_id}/${
+                            $("#delete_project_id")[0].value
+                        }/delete_project`,
                         {
                             method: "DELETE",
                             headers: {
@@ -203,67 +211,16 @@
                 }
             </script>
         </div>
-        <!-- <div id="list_projects"> -->
-        <!--     <p style="font-size: large">List Projects</p> -->
-        <!--     <input -->
-        <!--         name="category_id" -->
-        <!--         id="list_category_id" -->
-        <!--         value="Category Id" -->
-        <!--     /> -->
-        <!--     <button type="button" onclick="list_projects()">list</button> -->
-        <!--     <div id="projects"></div> -->
-        <!--     <script> -->
-        <!--         function list_projects() { -->
-        <!--             status = 0; -->
-        <!---->
-        <!--             fetch( -->
-        <!--                 `/my/${$("#list_category_id")[0].value}/show_projects`, -->
-        <!--                 { -->
-        <!--                     method: "GET", -->
-        <!--                     headers: { -->
-        <!--                         Accept: "application/json", -->
-        <!--                         "Content-Type": "application/json", -->
-        <!--                     }, -->
-        <!--                 } -->
-        <!--             ) -->
-        <!--                 .then((response) => { -->
-        <!--                     status = response.status; -->
-        <!--                     data = response.json(); -->
-        <!--                     return data; -->
-        <!--                 }) -->
-        <!--                 .then((data) => { -->
-        <!--                     html = ""; -->
-        <!--                     // console.log(data.categories); -->
-        <!--                     // console.log(data) -->
-        <!---->
-        <!--                     for (project of data.projects) { -->
-        <!--                         html += `<div> -->
-        <!--                         <p style="margin: 2px">id: ${project.project_id}</p> -->
-        <!--                         <p style="margin: 2px">name: ${project.name}</p> -->
-        <!--                     </div> -->
-        <!--                     <div style=" -->
-        <!--                         width: 100%; -->
-        <!--                         height: 1px; -->
-        <!--                         background-color: blue; -->
-        <!--                         margin-top: 10px; -->
-        <!--                         margin-bottom: 10px;"></div>`; -->
-        <!--                     } -->
-        <!--                     $("#projects")[0].innerHTML = html; -->
-        <!--                 }); -->
-        <!--         } -->
-        <!--     </script> -->
-        <!-- </div> -->
-        <div id="go_to_category">
-            <p style="font-size: large">Go to Category</p>
-            <input
-                name="category_id"
-                id="go_category_id"
-                value="Category Id"
-            />
-            <button type="button" onclick="go_to_category()">go</button>
+        <div id="go_to_project">
+            <p style="font-size: large">Go to project</p>
+            <input name="project_id" id="go_project_id" value="project Id" />
+            <button type="button" onclick="go_to_project()">go</button>
             <script>
-                function go_to_category() {
-                    window.location.href = `/my/${$("#go_category_id")[0].value}/dashboard`
+                function go_to_project() {
+                    category_id = $("#category_id")[0].innerHTML;
+                    window.location.href = `/my/${category_id}/${
+                        $("#go_project_id")[0].value
+                    }/dashboard`;
                 }
             </script>
         </div>

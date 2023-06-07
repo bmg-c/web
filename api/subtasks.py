@@ -1,16 +1,16 @@
 from services import subtasks
 from fastapi import APIRouter, Request
-from schemas import Details, CreateTaskInfo, NewTask, TaskList, TaskName, TaskDescription, TaskDeadline
-from pydantic import EmailStr
+from schemas import Details, NewTask, TaskList, TaskName, TaskDescription, TaskDeadline, TaskExecutor, TaskIndicator
 
 router = APIRouter(tags=['Subtasks'],
                    prefix='/my/{category_id}/{project_id}/{task_id}')
 
 
-@router.post('/create_subtask', response_model=CreateTaskInfo | Details)
+@router.post('/create_subtask', response_model=Details)
 def Create_Subtask(category_id: str, project_id: str, task_id: str,
                    data: NewTask, token: Request):
-    return subtasks.create_subtask(category_id, project_id, task_id, data, token)
+    return subtasks.create_subtask(category_id, project_id, task_id, data,
+                                   token)
 
 
 @router.get('/show_subtasks', response_model=TaskList | Details)
@@ -28,10 +28,11 @@ def Change_Subtask_Name(category_id: str, project_id: str, task_id: str,
 
 @router.put('/{subtask_id}/change_executor', response_model=Details)
 def Change_Subtask_Executor(category_id: str, project_id: str, task_id: str,
-                            subtask_id: str, executor: EmailStr,
+                            subtask_id: str, executor: TaskExecutor,
                             token: Request):
     return subtasks.change_subtask_executor(category_id, project_id, task_id,
-                                            subtask_id, executor, token)
+                                            subtask_id, executor.executor,
+                                            token)
 
 
 @router.put('/{subtask_id}/change_description', response_model=Details)
@@ -53,9 +54,11 @@ def Change_Subtask_Deadline(category_id: str, project_id: str, task_id: str,
 
 @router.put('/{subtask_id}/change_indicator', response_model=Details)
 def Change_Subtask_Indicator(category_id: str, project_id: str, task_id: str,
-                             subtask_id: str, indicator: str, token: Request):
+                             subtask_id: str, indicator: TaskIndicator,
+                             token: Request):
     return subtasks.change_subtask_indicator(category_id, project_id, task_id,
-                                             subtask_id, indicator, token)
+                                             subtask_id, indicator.indicator,
+                                             token)
 
 
 @router.delete('/{subtask_id}/delete', response_model=Details)

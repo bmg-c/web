@@ -63,11 +63,10 @@ class Subtasks:
                                     file.write(json.dumps(categories_db))
 
                                 return JSONResponse({
-                                    'task_id': subtask['subtask_id'],
-                                    'name': task['name']
+                                    'details': 'Подзадача успешно создана.'
                                 }, 200)
                         return JSONResponse({
-                            'details': 'Такой задачи не существует'}, 400)
+                            'details': 'Такой задачи не существует.'}, 400)
                 return JSONResponse({
                     'details': 'Такого проекта не существует.'}, 400)
         return JSONResponse({'details': 'Такой категории не существует.'}, 400)
@@ -108,7 +107,7 @@ class Subtasks:
                                                 executor = user['email']
                                             break
                                     subtask_info = {
-                                        'subtask_id': subtask['task_id'],
+                                        'subtask_id': subtask['subtask_id'],
                                         'name': subtask['name'],
                                         'indicator': subtask['indicator'],
                                         'description': subtask['description'],

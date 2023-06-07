@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Multitasker</title>
+        <title>Multitasker Login</title>
         <meta charset="utf-8" />
         <script src="../js/jquery-3.7.0.min.js"></script>
         <script>
@@ -39,16 +39,22 @@
         <div id="buttons">
             <button onclick="open_login()" type="button">Login</button>
             <button onclick="open_register()" type="button">Register</button>
+            <button onclick="open_recovery()" type="button">Recovery</button>
             <script>
                 function open_login() {
                     $("#login").show();
                     $("#register").hide();
+                    $("#recovery").hide();
                 }
-            </script>
-            <script>
                 function open_register() {
                     $("#login").hide();
                     $("#register").show();
+                    $("#recovery").hide();
+                }
+                function open_recovery() {
+                    $("#login").hide();
+                    $("#register").hide();
+                    $("#recovery").show();
                 }
             </script>
         </div>
@@ -58,7 +64,7 @@
             <h3>email</h3>
             <input name="email" id="email_login" />
             <h3>password</h3>
-            <input name="password" id="password_login" />
+            <input type="password" name="password" id="password_login" />
             <button onclick="login_btn()" type="button">Send</button>
             <script>
                 function login_btn() {
@@ -86,6 +92,7 @@
                                 $("#buttons").hide();
                                 $("#login").hide();
                                 $("#register").hide();
+                                $("#recovery").hide();
                                 $("#my").show();
                             } else if (status == 400)
                                 $("#login_text").text(data.details);
@@ -101,9 +108,13 @@
             <h3>email</h3>
             <input name="email" id="email_register" />
             <h3>password</h3>
-            <input name="password" id="password_register" />
+            <input type="password" name="password" id="password_register" />
             <h3>re_password</h3>
-            <input name="re_password" id="re_password_register" />
+            <input
+                type="password"
+                name="re_password"
+                id="re_password_register"
+            />
             <button onclick="register_btn()" type="button">Send</button>
             <script>
                 function register_btn() {
@@ -127,10 +138,13 @@
                         .then((data) => {
                             console.log(status);
                             if (status == 200) {
-                                $("#login_text").text("Пользователь успешно зарегестрирован.");
+                                $("#login_text").text(
+                                    "Пользователь успешно зарегестрирован."
+                                );
                                 $("#buttons").show();
                                 $("#login").show();
                                 $("#register").hide();
+                                $("#recovery").hide();
                                 $("#my").hide();
                             } else if (status == 400)
                                 $("#register_text").text(data.details);
@@ -140,11 +154,140 @@
                 }
             </script>
         </div>
+        <div id="recovery" hidden>
+            <h2>Recovery</h2>
+            <p id="recovery_text" style="font-size: large"></p>
+            <h3>email</h3>
+            <input name="email" id="email_recovery" />
+            <button type="button" onclick="send_verify_code()">
+                Отправить код
+            </button>
+            <h3>code</h3>
+            <input name="code" id="code_recovery" disabled />
+            <button type="button" onclick="verify_code()">
+                Верифицировать код
+            </button>
+            <h3>password</h3>
+            <input
+                type="password"
+                name="password"
+                id="password_recovery"
+                disabled
+            />
+            <h3>re_password</h3>
+            <input
+                type="password"
+                name="re_password"
+                id="re_password_recovery"
+                disabled
+            />
+            <button onclick="recover()" type="button">Recover</button>
+            <script>
+                function send_verify_code() {
+                    fetch("/auth/send_verify_code", {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            email: $("#email_recovery")[0].value,
+                        }),
+                    })
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            console.log(status);
+                            if (status == 200) {
+                                $("#recovery_text").text(data.details);
+                                $("#email_recovery")[0].disabled = true;
+                                $("#code_recovery")[0].disabled = false;
+                            } else if (status == 400)
+                                $("#recovery_text").text(data.details);
+                            else if (status == 422)
+                                $("#recovery_text").text(data.detail[0].msg);
+                        });
+                }
+                function verify_code() {
+                    fetch("/auth/validate_code", {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            email: $("#email_recovery")[0].value,
+                            code: $("#code_recovery")[0].value,
+                        }),
+                    })
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            console.log(status);
+                            if (status == 200) {
+                                $("#recovery_text").text(data.details);
+                                $("#email_recovery")[0].disabled = true;
+                                $("#code_recovery")[0].disabled = true;
+                                $("#password_recovery")[0].disabled = false;
+                                $("#re_password_recovery")[0].disabled = false;
+                            } else if (status == 400)
+                                $("#recovery_text").text(data.details);
+                            else if (status == 422)
+                                $("#recovery_text").text(data.detail[0].msg);
+                        });
+                }
+                function recover() {
+                    fetch("/auth/recover", {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            email: $("#email_recovery")[0].value,
+                            code: $("#code_recovery")[0].value,
+                            password: $("#password_recovery")[0].value,
+                            re_password: $("#re_password_recovery")[0].value,
+                        }),
+                    })
+                        .then((response) => {
+                            status = response.status;
+                            data = response.json();
+                            return data;
+                        })
+                        .then((data) => {
+                            console.log(status);
+                            if (status == 200) {
+                                $("#recovery_text").text(data.details);
+                                $("#email_recovery")[0].disabled = true;
+                                $("#code_recovery")[0].disabled = true;
+                                $("#password_recovery")[0].disabled = true;
+                                $("#re_password_recovery")[0].disabled = true;
+                            } else if (status == 400)
+                                $("#recovery_text").text(data.details);
+                            else if (status == 422)
+                                $("#recovery_text").text(data.detail[0].msg);
+                        });
+                }
+            </script>
+        </div>
         <div id="my">
             <button onclick="redirect_my()" type="button">go to my</button>
+            <button onclick="redirect_assign()" type="button">
+                go to assign
+            </button>
             <script>
                 function redirect_my() {
                     window.location.href = "/my";
+                }
+                function redirect_assign() {
+                    window.location.href = "/assign";
                 }
             </script>
             <button onclick="logout()" type="button">logout</button>
@@ -168,11 +311,13 @@
                                 $("#buttons").hide();
                                 $("#login").hide();
                                 $("#register").hide();
+                                $("#recovery").hide();
                                 $("#my").show();
                             } else {
                                 $("#buttons").show();
                                 $("#login").show();
                                 $("#register").hide();
+                                $("#recovery").hide();
                                 $("#my").hide();
                             }
                         });
